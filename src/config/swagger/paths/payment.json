@@ -1,0 +1,50 @@
+{
+  "/api/payments/locations": {
+    "get": {
+      "summary": "Get Square application and location IDs",
+      "description": "Retrieve the Square application ID and default location ID for payment processing",
+      "tags": ["Payment"],
+      "responses": {
+        "200": {
+          "description": "Square configuration retrieved successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "success": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "applicationId": {
+                    "type": "string",
+                    "description": "Square application ID"
+                  },
+                  "locationId": {
+                    "type": "string",
+                    "description": "Square location ID"
+                  },
+                  "environment": {
+                    "type": "string",
+                    "enum": ["sandbox", "production"],
+                    "description": "Square environment"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

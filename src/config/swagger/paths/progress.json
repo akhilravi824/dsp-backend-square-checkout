@@ -1,0 +1,268 @@
+{
+  "/api/progress": {
+    "get": {
+      "summary": "Get user progress",
+      "description": "Retrieve the current user's learning progress data",
+      "tags": ["Progress"],
+      "security": [
+        {
+          "cookieAuth": []
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Progress data retrieved successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "success": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "totalAttempts": {
+                        "type": "integer",
+                        "example": 42
+                      },
+                      "totalTimeSpent": {
+                        "type": "integer",
+                        "description": "Total time spent in seconds",
+                        "example": 3600
+                      },
+                      "activeDays": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        "description": "Array of dates when the user was active"
+                      },
+                      "levels": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "completed": {
+                              "type": "boolean"
+                            },
+                            "units": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "completed": {
+                                    "type": "boolean"
+                                  },
+                                  "lessons": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "completed": {
+                                          "type": "boolean"
+                                        },
+                                        "attempts": {
+                                          "type": "integer"
+                                        },
+                                        "timeSpent": {
+                                          "type": "integer",
+                                          "description": "Time spent in seconds"
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Not authenticated",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/api/progress/update": {
+    "post": {
+      "summary": "Update user progress",
+      "description": "Update the current user's learning progress for a specific lesson",
+      "tags": ["Progress"],
+      "security": [
+        {
+          "cookieAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "levelId",
+                    "unitId",
+                    "lessonId"
+                  ],
+                  "properties": {
+                    "levelId": {
+                      "type": "string",
+                      "description": "ID of the level"
+                    },
+                    "unitId": {
+                      "type": "string",
+                      "description": "ID of the unit"
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "description": "ID of the lesson to update progress for"
+                    },
+                    "attempt": {
+                      "type": "boolean",
+                      "description": "Whether to increment the attempt counter"
+                    },
+                    "complete": {
+                      "type": "boolean",
+                      "description": "Whether the lesson is completed"
+                    },
+                    "timeSpent": {
+                      "type": "integer",
+                      "description": "Time spent on the lesson in seconds"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "progress"
+                  ],
+                  "properties": {
+                    "progress": {
+                      "type": "object",
+                      "description": "Full progress object to update"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "reset",
+                    "progress"
+                  ],
+                  "properties": {
+                    "reset": {
+                      "type": "boolean",
+                      "description": "Whether to reset progress",
+                      "enum": [true]
+                    },
+                    "progress": {
+                      "type": "object",
+                      "description": "New progress object to set"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Progress updated successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "success": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "progress": {
+                    "type": "object",
+                    "description": "Updated progress data"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Invalid input",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Not authenticated",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

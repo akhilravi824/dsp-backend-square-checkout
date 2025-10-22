@@ -1,0 +1,58 @@
+{
+  "/api/webhooks/square": {
+    "post": {
+      "summary": "Handle Square webhook events",
+      "description": "Process webhook notifications from Square for subscription events",
+      "tags": ["Webhook"],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "description": "Square webhook event payload"
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Webhook processed successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "success": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Invalid signature or payload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

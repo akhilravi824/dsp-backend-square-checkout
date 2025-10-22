@@ -1,0 +1,201 @@
+{
+  "/api/videos/upload": {
+    "post": {
+      "summary": "Upload a video",
+      "description": "Upload a new video file",
+      "tags": ["Video"],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "multipart/form-data": {
+            "schema": {
+              "type": "object",
+              "required": [
+                "video"
+              ],
+              "properties": {
+                "video": {
+                  "type": "string",
+                  "format": "binary",
+                  "description": "Video file to upload (max 50MB)"
+                },
+                "title": {
+                  "type": "string",
+                  "description": "Title of the video"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Description of the video"
+                },
+                "level": {
+                  "type": "integer",
+                  "description": "Level associated with the video"
+                },
+                "unit": {
+                  "type": "integer",
+                  "description": "Unit associated with the video"
+                },
+                "lesson": {
+                  "type": "string",
+                  "description": "Lesson ID associated with the video"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Video uploaded successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "success": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Invalid input or file too large",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/api/videos/proxy-upload": {
+    "post": {
+      "summary": "Proxy upload a video",
+      "description": "Upload a video through a proxy to an external service",
+      "tags": ["Video"],
+      "security": [
+        {
+          "cookieAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "multipart/form-data": {
+            "schema": {
+              "type": "object",
+              "required": [
+                "video"
+              ],
+              "properties": {
+                "video": {
+                  "type": "string",
+                  "format": "binary",
+                  "description": "Video file to upload (max 50MB)"
+                },
+                "metadata": {
+                  "type": "string",
+                  "description": "JSON string containing metadata for the video"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Video proxied successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "success": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string",
+                        "format": "uri"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Invalid input or file too large",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Not authenticated",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

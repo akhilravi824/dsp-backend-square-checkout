@@ -1,0 +1,1333 @@
+{
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and account management"
+    },
+    {
+      "name": "Profile",
+      "description": "User profile management"
+    },
+    {
+      "name": "Subscription",
+      "description": "Subscription plan management"
+    },
+    {
+      "name": "Progress",
+      "description": "User learning progress tracking"
+    },
+    {
+      "name": "Webhook",
+      "description": "External service webhook handlers"
+    },
+    {
+      "name": "Payment",
+      "description": "Payment method and transaction operations"
+    },
+    {
+      "name": "Video",
+      "description": "Video content management"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string"
+          },
+          "error": {
+            "type": "object"
+          }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "user": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "MfaRequiredResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "mfaRequired": {
+            "type": "boolean",
+            "example": true
+          },
+          "factors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "updated_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["verified", "unverified"]
+                },
+                "factor_type": {
+                  "type": "string",
+                  "enum": ["totp"]
+                },
+                "phone": {
+                  "type": "string"
+                },
+                "last_challenged_at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "userId": {
+            "type": "string"
+          },
+          "accessToken": {
+            "type": "string"
+          }
+        }
+      },
+      "SignupRequest": {
+        "type": "object",
+        "required": ["email", "password", "name", "consent"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          },
+          "name": {
+            "type": "string"
+          },
+          "consent": {
+            "type": "boolean"
+          },
+          "allow_video_usage": {
+            "type": "boolean",
+            "description": "Whether or not user consents to let DSP use their videos to make the platform better",
+            "default": false
+          },
+          "university": {
+            "type": "string"
+          },
+          "signup_data": {
+            "type": "object",
+            "description": "Additional data collected during signup process",
+            "default": {}
+          }
+        }
+      },
+      "SignupResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "User created successfully. Please check your email to confirm your account before logging in."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "user": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        }
+      },
+      "UpdatePasswordRequest": {
+        "type": "object",
+        "required": ["token", "password"],
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        }
+      },
+      "UpdateEmailRequest": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        }
+      },
+      "ProfileCreateRequest": {
+        "type": "object",
+        "required": ["name", "email", "password", "consent"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          },
+          "consent": {
+            "type": "boolean"
+          },
+          "university": {
+            "type": "string"
+          }
+        }
+      },
+      "ProfileCreateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Profile created successfully"
+          }
+        }
+      },
+      "NotificationPreferencesRequest": {
+        "type": "object",
+        "required": ["tipsAndGuidance", "productUpdates"],
+        "properties": {
+          "tipsAndGuidance": {
+            "type": "boolean"
+          },
+          "productUpdates": {
+            "type": "boolean"
+          }
+        }
+      },
+      "NotificationPreferencesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Notification preferences updated successfully"
+          }
+        }
+      },
+      "MailchimpContactRequest": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string"
+          },
+          "tipsAndGuidance": {
+            "type": "boolean"
+          },
+          "productUpdates": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SignedUpRequest": {
+        "type": "object",
+        "required": ["signed_up"],
+        "properties": {
+          "signed_up": {
+            "type": "boolean",
+            "description": "Whether the user has completed the sign up process"
+          }
+        }
+      },
+      "SignedUpResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Signed up status updated successfully"
+          },
+          "data": {
+            "type": "object"
+          }
+        }
+      },
+      "MailchimpResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "User added to Mailchimp successfully"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "MfaChallengeRequest": {
+        "type": "object",
+        "required": ["factorId"],
+        "properties": {
+          "factorId": {
+            "type": "string"
+          },
+          "accessToken": {
+            "type": "string",
+            "description": "Required during login flow, optional if using session cookie"
+          }
+        }
+      },
+      "MfaChallengeResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "challengeId": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "MfaVerifyChallengeRequest": {
+        "type": "object",
+        "required": ["factorId", "challengeId", "code"],
+        "properties": {
+          "factorId": {
+            "type": "string"
+          },
+          "challengeId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "accessToken": {
+            "type": "string",
+            "description": "Required during login flow, optional if using session cookie"
+          }
+        }
+      },
+      "MfaVerifyChallengeResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "access_token": {
+                "type": "string"
+              },
+              "refresh_token": {
+                "type": "string"
+              },
+              "expires_at": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          }
+        }
+      },
+      "ProgressLessonUpdateRequest": {
+        "type": "object",
+        "required": ["levelId", "unitId", "lessonId"],
+        "properties": {
+          "levelId": {
+            "type": "string"
+          },
+          "unitId": {
+            "type": "string"
+          },
+          "lessonId": {
+            "type": "string"
+          },
+          "attempt": {
+            "type": "boolean"
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "timeSpent": {
+            "type": "integer"
+          }
+        }
+      },
+      "ProgressFullUpdateRequest": {
+        "type": "object",
+        "required": ["progress"],
+        "properties": {
+          "progress": {
+            "type": "object",
+            "properties": {
+              "totalAttempts": {
+                "type": "integer"
+              },
+              "totalTimeSpent": {
+                "type": "integer"
+              },
+              "activeDays": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "date"
+                }
+              },
+              "levels": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "completed": {
+                      "type": "boolean"
+                    },
+                    "units": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "completed": {
+                            "type": "boolean"
+                          },
+                          "lessons": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "completed": {
+                                  "type": "boolean"
+                                },
+                                "attempts": {
+                                  "type": "integer"
+                                },
+                                "timeSpent": {
+                                  "type": "integer"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ProgressResetRequest": {
+        "type": "object",
+        "required": ["reset", "progress"],
+        "properties": {
+          "reset": {
+            "type": "boolean",
+            "example": true
+          },
+          "progress": {
+            "type": "object",
+            "properties": {
+              "totalAttempts": {
+                "type": "integer",
+                "example": 0
+              },
+              "totalTimeSpent": {
+                "type": "integer",
+                "example": 0
+              },
+              "activeDays": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "example": []
+              },
+              "levels": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                },
+                "example": []
+              }
+            }
+          }
+        }
+      },
+      "ProgressResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Progress updated successfully"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "progress": {
+                "$ref": "#/components/schemas/UserProgress"
+              }
+            }
+          }
+        }
+      },
+      "SubscriptionPlansResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "objects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "variations": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "variationId": {
+                        "type": "string"
+                      },
+                      "price": {
+                        "type": "number"
+                      },
+                      "basePrice": {
+                        "type": "number"
+                      },
+                      "monthlyPrice": {
+                        "type": "number"
+                      },
+                      "totalPrice": {
+                        "type": "number"
+                      },
+                      "discountPercent": {
+                        "type": "number"
+                      },
+                      "hasDiscount": {
+                        "type": "boolean"
+                      },
+                      "currency": {
+                        "type": "string"
+                      },
+                      "formattedPrice": {
+                        "type": "string"
+                      },
+                      "formattedMonthlyPrice": {
+                        "type": "string"
+                      },
+                      "formattedTotalPrice": {
+                        "type": "string"
+                      },
+                      "formattedBasePrice": {
+                        "type": "string"
+                      },
+                      "interval": {
+                        "type": "string"
+                      },
+                      "formattedInterval": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "environment": {
+            "type": "string"
+          }
+        }
+      },
+      "SubscriptionCreateRequest": {
+        "type": "object",
+        "required": ["planId", "sourceId", "userId"],
+        "properties": {
+          "planId": {
+            "type": "string"
+          },
+          "sourceId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "variationId": {
+            "type": "string"
+          }
+        }
+      },
+      "SubscriptionCreateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "subscription_id": {
+                "type": "string"
+              },
+              "customer_id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "start_date": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "plan_id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "SubscriptionSwapPlanRequest": {
+        "type": "object",
+        "required": ["newPlanVariationId", "squareCustomerId"],
+        "properties": {
+          "newPlanVariationId": {
+            "type": "string"
+          },
+          "squareCustomerId": {
+            "type": "string"
+          }
+        }
+      },
+      "SubscriptionUpdatePaymentMethodRequest": {
+        "type": "object",
+        "required": ["sourceId"],
+        "properties": {
+          "sourceId": {
+            "type": "string"
+          }
+        }
+      },
+      "VideoUploadRequest": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "description": "Video file to upload"
+          }
+        },
+        "required": ["file"]
+      },
+      "VideoUploadResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "filename": {
+                "type": "string"
+              },
+              "mimetype": {
+                "type": "string"
+              },
+              "size": {
+                "type": "integer"
+              },
+              "externalResponse": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  }
+                }
+              },
+              "localPath": {
+                "type": "string"
+              },
+              "externalError": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "integer"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "details": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "VideoResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "thumbnailUrl": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "integer"
+          },
+          "level": {
+            "type": "integer"
+          },
+          "unit": {
+            "type": "integer"
+          },
+          "lesson": {
+            "type": "string"
+          },
+          "transcripts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "startTime": {
+                  "type": "number"
+                },
+                "endTime": {
+                  "type": "number"
+                },
+                "text": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "relatedVideos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "VideosListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VideoResponse"
+            }
+          }
+        }
+      },
+      "SquareWebhookRequest": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["subscription.created", "subscription.updated"]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "object": {
+                "type": "object",
+                "properties": {
+                  "subscription": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "customer_id": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": ["ACTIVE", "CANCELED", "PENDING"]
+                      },
+                      "plan_variation_id": {
+                        "type": "string"
+                      },
+                      "start_date": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "canceled_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "PaymentLocationsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "applicationId": {
+            "type": "string"
+          },
+          "locationId": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string",
+            "enum": ["sandbox", "production"]
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/profiles/signed-up": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Update user's signed up status",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignedUpRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed up status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedUpResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/videos": {
+      "get": {
+        "tags": ["Video"],
+        "summary": "Get available videos",
+        "description": "Retrieves a list of all available videos",
+        "responses": {
+          "200": {
+            "description": "List of videos retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideosListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/videos/{id}": {
+      "get": {
+        "tags": ["Video"],
+        "summary": "Get a specific video",
+        "description": "Retrieves a specific video by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Video ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Video retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Video not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/videos/upload": {
+      "post": {
+        "tags": ["Video"],
+        "summary": "Upload a video file",
+        "description": "Uploads a video file to the server",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoUploadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Video uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoUploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - No video file provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/videos/proxy-upload": {
+      "post": {
+        "tags": ["Video"],
+        "summary": "Upload a video file through a proxy",
+        "description": "Uploads a video file through a proxy to an external service",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoUploadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Video uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoUploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - No video file provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/webhooks/square": {
+      "post": {
+        "tags": ["Webhook"],
+        "summary": "Handle Square webhook events",
+        "description": "Processes Square subscription events such as creation and updates",
+        "parameters": [
+          {
+            "name": "x-square-hmacsha256-signature",
+            "in": "header",
+            "required": true,
+            "description": "Square webhook signature for verification",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SquareWebhookRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Signature verification failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payments/locations": {
+      "get": {
+        "tags": ["Payment"],
+        "summary": "Get Square application ID and location ID",
+        "description": "Retrieves Square application ID and location ID for client-side payment processing",
+        "responses": {
+          "200": {
+            "description": "Square location information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentLocationsResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
